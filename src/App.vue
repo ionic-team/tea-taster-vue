@@ -16,3 +16,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style>
+.error-message {
+  color: var(--ion-color-danger, ##ff0000);
+}
+</style>

@@ -12,6 +12,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Tea List',
     component: TeaList,
   },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/Login.vue'),
+  },
 ];
 
 const router = createRouter({
