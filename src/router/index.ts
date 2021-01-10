@@ -1,6 +1,26 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
-import { RouteRecordRaw } from 'vue-router';
+import {
+  NavigationGuardNext,
+  RouteRecordRaw,
+  RouteLocationNormalized,
+} from 'vue-router';
+
+import store from '@/store';
 import TeaList from '../views/TeaList.vue';
+
+async function checkAuthStatus(
+  to: RouteLocationNormalized,
+  from: RouteLocationNormalized,
+  next: NavigationGuardNext,
+) {
+  if (!store.state.session && to.matched.some(r => r.meta.requiresAuth)) {
+    await store.dispatch('restore');
+    if (!store.state.session) {
+      return next('/login');
+    }
+  }
+  next();
+}
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -11,6 +31,7 @@ const routes: Array<RouteRecordRaw> = [
     path: '/teas',
     name: 'Tea List',
     component: TeaList,
+    meta: { requiresAuth: true },
   },
   {
     path: '/login',
@@ -23,5 +44,7 @@ const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
 });
+
+router.beforeEach(checkAuthStatus);
 
 export default router;

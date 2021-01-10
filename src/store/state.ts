@@ -7,3 +7,7 @@ export interface State {
 export const state = {
   session: null,
 };
+
+export const getters = {
+  sessionToken: (state: State): string | undefined => state.session?.token,
+};

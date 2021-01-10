@@ -1,11 +1,26 @@
 import { mount, VueWrapper } from '@vue/test-utils';
-import { Tea as Tea } from '@/models';
+import { createRouter, createWebHistory } from 'vue-router';
+import { Tea } from '@/models';
+
+import store from '@/store';
 import TeaList from '@/views/TeaList.vue';
 
 describe('TeaList.vue', () => {
+  let router: any;
   let wrapper: VueWrapper<any>;
-  beforeEach(() => {
-    wrapper = mount(TeaList);
+
+  beforeEach(async () => {
+    store.dispatch = jest.fn().mockResolvedValue(undefined);
+    router = createRouter({
+      history: createWebHistory(process.env.BASE_URL),
+      routes: [{ path: '/', component: TeaList }],
+    });
+    router.push('/');
+    await router.isReady();
+    router.replace = jest.fn();
+    wrapper = mount(TeaList, {
+      global: { plugins: [router, store] },
+    });
   });
 
   it('displays the title', () => {
@@ -52,5 +67,19 @@ describe('TeaList.vue', () => {
         expect(title.text()).toBe(teas[idx].description);
       });
     });
+  });
+
+  it('dispatches a logout action when the logout button is clicked', () => {
+    const button = wrapper.findComponent('[data-testid="logout-button"]');
+    button.trigger('click');
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(store.dispatch).toHaveBeenCalledWith('logout');
+  });
+
+  it('navigates to the login after the dispatch is complete', async () => {
+    const button = wrapper.findComponent('[data-testid="logout-button"]');
+    await button.trigger('click');
+    expect(router.replace).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith('/login');
   });
 });
