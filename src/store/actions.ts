@@ -8,7 +8,7 @@ import { Session } from '@/models';
 
 export const actions = {
   async login(
-    { commit }: ActionContext<State, State>,
+    { commit, dispatch }: ActionContext<State, State>,
     credentials: { email: string; password: string },
   ): Promise<boolean> {
     const response = await AuthenticationService.login(
@@ -21,6 +21,7 @@ export const actions = {
         token: response.token,
       };
       commit('SET_SESSION', session);
+      dispatch('load');
       SessionVaultService.set(session);
     }
     return response?.success;
@@ -32,10 +33,14 @@ export const actions = {
     dispatch('clear');
   },
 
-  async restore({ commit }: ActionContext<State, State>): Promise<void> {
+  async restore({
+    commit,
+    dispatch,
+  }: ActionContext<State, State>): Promise<void> {
     const session = await SessionVaultService.get();
     if (session) {
       commit('SET_SESSION', session);
+      dispatch('load');
     }
   },
 

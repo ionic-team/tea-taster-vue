@@ -75,6 +75,11 @@ describe('root actions', () => {
         expect(context.commit).not.toHaveBeenCalled();
       });
 
+      it('does not dispatch any further actions', async () => {
+        await actions.login(context, credentials);
+        expect(context.dispatch).not.toHaveBeenCalled();
+      });
+
       it('resolves false', async () => {
         expect(await actions.login(context, credentials)).toBe(false);
       });
@@ -99,6 +104,12 @@ describe('root actions', () => {
         await actions.login(context, credentials);
         expect(context.commit).toHaveBeenCalledTimes(1);
         expect(context.commit).toHaveBeenCalledWith('SET_SESSION', session);
+      });
+
+      it(`dispatches the load action`, async () => {
+        await actions.login(context, credentials);
+        expect(context.dispatch).toHaveBeenCalledTimes(1);
+        expect(context.dispatch).toHaveBeenCalledWith('load');
       });
 
       it('resolves true', async () => {
@@ -136,6 +147,11 @@ describe('root actions', () => {
         await actions.restore(context);
         expect(context.commit).not.toHaveBeenCalled();
       });
+
+      it('does not dispatch any further actions', async () => {
+        await actions.restore(context);
+        expect(context.dispatch).not.toHaveBeenCalled();
+      });
     });
 
     describe('with a stored session', () => {
@@ -147,6 +163,12 @@ describe('root actions', () => {
         await actions.restore(context);
         expect(context.commit).toHaveBeenCalledTimes(1);
         expect(context.commit).toHaveBeenCalledWith('SET_SESSION', session);
+      });
+
+      it('dispatches the load action', async () => {
+        await actions.restore(context);
+        expect(context.dispatch).toHaveBeenCalledTimes(1);
+        expect(context.dispatch).toHaveBeenCalledWith('load');
       });
     });
   });
