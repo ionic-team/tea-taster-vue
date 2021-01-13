@@ -128,6 +128,14 @@ describe('TeaList.vue', () => {
     });
   });
 
+  it('goes to the tea details page when a tea card is clicked', () => {
+    const cards = wrapper.findAllComponents('ion-card');
+    router.push = jest.fn();
+    cards[3].trigger('click');
+    expect(router.push).toHaveBeenCalledTimes(1);
+    expect(router.push).toHaveBeenCalledWith('/teas/tea/4');
+  });
+
   it('dispatches a logout action when the logout button is clicked', () => {
     const button = wrapper.findComponent('[data-testid="logout-button"]');
     button.trigger('click');

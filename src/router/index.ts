@@ -38,6 +38,12 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Login',
     component: () => import('@/views/Login.vue'),
   },
+  {
+    path: '/teas/tea/:id',
+    name: 'Tea Details',
+    component: () => import('@/views/TeaDetails.vue'),
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({
