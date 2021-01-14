@@ -16,6 +16,7 @@
         </div>
         <h1 data-testid="name">{{ tea.name }}</h1>
         <p data-testid="description">{{ tea.description }}</p>
+        <app-rating data-testid="rating" v-model="rating"></app-rating>
       </div>
     </ion-content>
   </ion-page>
@@ -35,11 +36,14 @@ import {
 import { useRoute } from 'vue-router';
 import { mapGetters } from 'vuex';
 import { defineComponent } from 'vue';
+
+import AppRating from '@/components/AppRating.vue';
 import { Tea } from '@/models';
 
 export default defineComponent({
   name: 'TeaDetails',
   components: {
+    AppRating,
     IonBackButton,
     IonButtons,
     IonContent,
@@ -54,6 +58,11 @@ export default defineComponent({
     tea(): Tea {
       return this.find(this.id);
     },
+  },
+  data() {
+    return {
+      rating: 0,
+    };
   },
   setup() {
     const { params } = useRoute();
