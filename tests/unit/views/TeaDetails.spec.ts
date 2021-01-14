@@ -15,6 +15,7 @@ describe('TeaDetails.vue', () => {
       name: 'Purple Tea',
       description: 'Is this actually a thing?',
       image: '/assets/img/nope.jpg',
+      rating: 3,
     };
     store.commit('teas/SET', [tea]);
     store.dispatch = jest.fn();
@@ -46,5 +47,20 @@ describe('TeaDetails.vue', () => {
   it('renders the tea description', () => {
     const description = wrapper.find('[data-testid="description"]');
     expect(description.text()).toBe('Is this actually a thing?');
+  });
+
+  it('sets the rating based on the tea', () => {
+    expect(wrapper.vm.rating).toBe(3);
+  });
+
+  it('dispatches rating on click', async () => {
+    const rating = wrapper.find('[data-testid="rating"]');
+    wrapper.setData({ rating: 2 });
+    rating.trigger('click');
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(store.dispatch).toHaveBeenCalledWith('teas/rate', {
+      tea,
+      rating: 2,
+    });
   });
 });

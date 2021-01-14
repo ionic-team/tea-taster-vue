@@ -4,6 +4,7 @@ import TeaService from '@/services/TeaService';
 
 import { State } from './state';
 import { State as RootState } from '../state';
+import { Tea } from '@/models';
 
 export const actions = {
   clear: {
@@ -19,5 +20,16 @@ export const actions = {
       const teas = await TeaService.getAll();
       commit('SET', teas);
     },
+  },
+
+  async rate(
+    { commit }: ActionContext<State, RootState>,
+    payload: { tea: Tea; rating: number },
+  ): Promise<void> {
+    TeaService.save({ ...payload.tea, rating: payload.rating });
+    commit('SET_RATING', {
+      id: payload.tea.id,
+      rating: payload.rating,
+    });
   },
 };

@@ -1,4 +1,6 @@
 import { client } from './api';
+import { Plugins } from '@capacitor/core';
+
 import { Tea } from '@/models';
 
 interface RawData {
@@ -18,8 +20,18 @@ const images: Array<string> = [
   'yellow',
 ];
 
-function unpackData(data: Array<RawData>): Array<Tea> {
-  return data.map(t => ({ ...t, image: `assets/img/${images[t.id - 1]}.jpg` }));
+async function transformTea(data: RawData): Promise<Tea> {
+  const { Storage } = Plugins;
+  const { value } = await Storage.get({ key: `rating${data.id}` });
+  return {
+    ...data,
+    image: `assets/img/${images[data.id - 1]}.jpg`,
+    rating: parseInt(value || '0', 10),
+  };
+}
+
+function unpackData(data: Array<RawData>): Promise<Array<Tea>> {
+  return Promise.all(data.map(t => transformTea(t)));
 }
 
 export default {
@@ -27,5 +39,13 @@ export default {
     return client
       .get('/tea-categories')
       .then(res => res.data && unpackData(res.data));
+  },
+
+  async save(tea: Tea): Promise<void> {
+    const { Storage } = Plugins;
+    return Storage.set({
+      key: `rating${tea.id}`,
+      value: tea.rating.toString(),
+    });
   },
 };

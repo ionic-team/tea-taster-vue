@@ -16,7 +16,11 @@
         </div>
         <h1 data-testid="name">{{ tea.name }}</h1>
         <p data-testid="description">{{ tea.description }}</p>
-        <app-rating data-testid="rating" v-model="rating"></app-rating>
+        <app-rating
+          data-testid="rating"
+          v-model="rating"
+          @click="ratingClicked"
+        ></app-rating>
       </div>
     </ion-content>
   </ion-page>
@@ -34,7 +38,7 @@ import {
   IonToolbar,
 } from '@ionic/vue';
 import { useRoute } from 'vue-router';
-import { mapGetters } from 'vuex';
+import { mapActions, mapGetters } from 'vuex';
 import { defineComponent } from 'vue';
 
 import AppRating from '@/components/AppRating.vue';
@@ -63,6 +67,23 @@ export default defineComponent({
     return {
       rating: 0,
     };
+  },
+  methods: {
+    ...mapActions('teas', ['rate']),
+    ratingClicked() {
+      this.rate({
+        tea: this.tea,
+        rating: this.rating,
+      });
+    },
+  },
+  created() {
+    this.rating = this.tea?.rating;
+  },
+  watch: {
+    tea(newValue) {
+      this.rating = newValue?.rating;
+    },
   },
   setup() {
     const { params } = useRoute();
