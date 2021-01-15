@@ -6,7 +6,7 @@ import {
 } from 'vue-router';
 
 import store from '@/store';
-import TeaList from '../views/TeaList.vue';
+import Tabs from '../views/Tabs.vue';
 
 async function checkAuthStatus(
   to: RouteLocationNormalized,
@@ -25,13 +25,7 @@ async function checkAuthStatus(
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/teas',
-  },
-  {
-    path: '/teas',
-    name: 'Tea List',
-    component: TeaList,
-    meta: { requiresAuth: true },
+    redirect: '/tabs/teas',
   },
   {
     path: '/login',
@@ -39,10 +33,38 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/Login.vue'),
   },
   {
-    path: '/teas/tea/:id',
-    name: 'Tea Details',
-    component: () => import('@/views/TeaDetails.vue'),
-    meta: { requiresAuth: true },
+    path: '/tabs/',
+    component: Tabs,
+    children: [
+      {
+        path: '',
+        redirect: '/tabs/teas',
+      },
+      {
+        path: 'teas',
+        name: 'Tea List',
+        component: () => import('@/views/TeaList.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'teas/tea/:id',
+        name: 'Tea Details',
+        component: () => import('@/views/TeaDetails.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'about',
+        name: 'About',
+        component: () => import('@/views/About.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'tasting-notes',
+        name: 'Tasting Notes',
+        component: () => import('@/views/TastingNotes.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
   },
 ];
 

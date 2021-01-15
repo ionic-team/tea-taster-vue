@@ -140,7 +140,7 @@ describe('TeaList.vue', () => {
     router.push = jest.fn();
     cards[3].trigger('click');
     expect(router.push).toHaveBeenCalledTimes(1);
-    expect(router.push).toHaveBeenCalledWith('/teas/tea/4');
+    expect(router.push).toHaveBeenCalledWith('/tabs/teas/tea/4');
   });
 
   it('dispatches a logout action when the logout button is clicked', () => {

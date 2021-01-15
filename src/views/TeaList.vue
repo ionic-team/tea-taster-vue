@@ -36,7 +36,7 @@
             size-xl="3"
             :key="tea.id"
           >
-            <ion-card button @click="$router.push(`/teas/tea/${tea.id}`)">
+            <ion-card button @click="$router.push(`/tabs/teas/tea/${tea.id}`)">
               <ion-img :src="tea.image"></ion-img>
               <ion-card-header>
                 <ion-card-title>{{ tea.name }}</ion-card-title>
