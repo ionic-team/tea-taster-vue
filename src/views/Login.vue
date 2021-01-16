@@ -6,7 +6,7 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content>
+    <ion-content class="main-content">
       <ion-list>
         <ion-item>
           <ion-label position="floating">Email</ion-label>
@@ -36,7 +36,7 @@
     </ion-content>
 
     <ion-footer>
-      <ion-toolbar>
+      <ion-toolbar color="secondary">
         <ion-button
           expand="full"
           data-testid="signin-button"

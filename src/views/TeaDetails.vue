@@ -9,7 +9,7 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="ion-padding">
+    <ion-content class="main-content ion-padding">
       <div v-if="tea">
         <div class="ion-justify-content-center" style="display: flex">
           <ion-img :src="tea.image"></ion-img>
