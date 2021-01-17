@@ -2,6 +2,7 @@
   "name": "tea-taster",
   "version": "0.0.1",
   "description": "Taste delicious teas, write notes about them",
+  "author": "Ken Sodemann",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",

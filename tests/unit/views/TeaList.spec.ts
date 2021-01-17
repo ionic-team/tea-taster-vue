@@ -76,14 +76,13 @@ describe('TeaList.vue', () => {
       },
     ];
     store.commit('teas/SET', teas);
-    store.dispatch = jest.fn().mockResolvedValue(undefined);
+    store.dispatch = jest.fn();
     router = createRouter({
       history: createWebHistory(process.env.BASE_URL),
       routes: [{ path: '/', component: TeaList }],
     });
     router.push('/');
     await router.isReady();
-    router.replace = jest.fn();
     wrapper = mount(TeaList, {
       global: { plugins: [router, store] },
     });
@@ -141,19 +140,5 @@ describe('TeaList.vue', () => {
     cards[3].trigger('click');
     expect(router.push).toHaveBeenCalledTimes(1);
     expect(router.push).toHaveBeenCalledWith('/tabs/teas/tea/4');
-  });
-
-  it('dispatches a logout action when the logout button is clicked', () => {
-    const button = wrapper.findComponent('[data-testid="logout-button"]');
-    button.trigger('click');
-    expect(store.dispatch).toHaveBeenCalledTimes(1);
-    expect(store.dispatch).toHaveBeenCalledWith('logout');
-  });
-
-  it('navigates to the login after the dispatch is complete', async () => {
-    const button = wrapper.findComponent('[data-testid="logout-button"]');
-    await button.trigger('click');
-    expect(router.replace).toHaveBeenCalledTimes(1);
-    expect(router.replace).toHaveBeenCalledWith('/login');
   });
 });

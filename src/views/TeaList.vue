@@ -3,16 +3,6 @@
     <ion-header :translucent="true">
       <ion-toolbar>
         <ion-title>Teas</ion-title>
-        <ion-buttons slot="end">
-          <ion-button
-            data-testid="logout-button"
-            @click="
-              $store.dispatch('logout').then(() => $router.replace('/login'))
-            "
-          >
-            <ion-icon slot="icon-only" :icon="logOutOutline"></ion-icon>
-          </ion-button>
-        </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
@@ -52,8 +42,6 @@
 
 <script lang="ts">
 import {
-  IonButton,
-  IonButtons,
   IonCard,
   IonCardContent,
   IonCardHeader,
@@ -62,7 +50,6 @@ import {
   IonContent,
   IonGrid,
   IonHeader,
-  IonIcon,
   IonImg,
   IonPage,
   IonRow,
@@ -71,7 +58,6 @@ import {
 } from '@ionic/vue';
 import { mapState } from 'vuex';
 import { defineComponent } from 'vue';
-import { logOutOutline } from 'ionicons/icons';
 
 import { Tea } from '@/models';
 
@@ -99,8 +85,6 @@ export default defineComponent({
     },
   },
   components: {
-    IonButton,
-    IonButtons,
     IonCard,
     IonCardContent,
     IonCardHeader,
@@ -109,15 +93,11 @@ export default defineComponent({
     IonContent,
     IonGrid,
     IonHeader,
-    IonIcon,
     IonImg,
     IonPage,
     IonRow,
     IonTitle,
     IonToolbar,
-  },
-  setup() {
-    return { logOutOutline };
   },
 });
 </script>
