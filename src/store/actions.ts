@@ -1,19 +1,28 @@
 import { ActionContext } from 'vuex';
+import { AuthMode } from '@ionic-enterprise/identity-vault';
 
 import AuthenticationService from '@/services/AuthenticationService';
-import SessionVaultService from '@/services/SessionVaultService';
+import { sessionVaultService } from '@/services/SessionVaultService';
 
 import { State } from './state';
 import { Session } from '@/models';
 
+async function restoreSession(): Promise<Session | undefined> {
+  try {
+    return await sessionVaultService.restoreSession();
+  } catch (err) {
+    return undefined;
+  }
+}
+
 export const actions = {
   async login(
     { commit, dispatch }: ActionContext<State, State>,
-    credentials: { email: string; password: string },
+    payload: { email: string; password: string; authMode: AuthMode },
   ): Promise<boolean> {
     const response = await AuthenticationService.login(
-      credentials.email,
-      credentials.password,
+      payload.email,
+      payload.password,
     );
     if (response.success && response.user && response.token) {
       const session: Session = {
@@ -22,26 +31,27 @@ export const actions = {
       };
       commit('SET_SESSION', session);
       dispatch('load');
-      SessionVaultService.set(session);
+      sessionVaultService.login(session, payload.authMode);
     }
     return response?.success;
   },
 
   async logout({ dispatch }: ActionContext<State, State>): Promise<void> {
     await AuthenticationService.logout();
-    await SessionVaultService.clear();
+    await sessionVaultService.logout();
     dispatch('clear');
   },
 
   async restore({
     commit,
     dispatch,
-  }: ActionContext<State, State>): Promise<void> {
-    const session = await SessionVaultService.get();
+  }: ActionContext<State, State>): Promise<Session | undefined> {
+    const session = await restoreSession();
     if (session) {
       commit('SET_SESSION', session);
       dispatch('load');
     }
+    return session;
   },
 
   clear({ commit }: ActionContext<State, State>): void {

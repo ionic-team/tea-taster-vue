@@ -1,3 +1,4 @@
+import { AuthMode } from '@ionic-enterprise/identity-vault';
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import {
   NavigationGuardNext,
@@ -5,8 +6,20 @@ import {
   RouteLocationNormalized,
 } from 'vue-router';
 
+import { sessionVaultService } from '@/services/SessionVaultService';
 import store from '@/store';
 import Tabs from '../views/Tabs.vue';
+
+async function attemptRestore(): Promise<void> {
+  const mode = await sessionVaultService.getAuthMode();
+  if (
+    mode === AuthMode.PasscodeOnly ||
+    mode === AuthMode.BiometricAndPasscode
+  ) {
+    return;
+  }
+  await store.dispatch('restore');
+}
 
 async function checkAuthStatus(
   to: RouteLocationNormalized,
@@ -14,7 +27,7 @@ async function checkAuthStatus(
   next: NavigationGuardNext,
 ) {
   if (!store.state.session && to.matched.some(r => r.meta.requiresAuth)) {
-    await store.dispatch('restore');
+    await attemptRestore();
     if (!store.state.session) {
       return next('/login');
     }
