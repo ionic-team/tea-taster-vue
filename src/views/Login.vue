@@ -6,117 +6,196 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="main-content">
-      <ion-list>
-        <ion-item>
-          <ion-label position="floating">Email</ion-label>
-          <ion-input
-            type="email"
-            v-model.trim="v.email.$model"
-            data-testid="email-input"
-          ></ion-input>
-        </ion-item>
+    <ion-content class="ion-text-center main-content">
+      <div v-if="!canUnlock">
+        <ion-list>
+          <ion-item>
+            <ion-label>Session Locking</ion-label>
+            <ion-select v-model="authMode" data-testid="auth-mode-select">
+              <ion-select-option
+                v-for="authMode of authModes"
+                :value="authMode.mode"
+                :key="authMode.mode"
+                >{{ authMode.label }}</ion-select-option
+              >
+            </ion-select>
+          </ion-item>
+        </ion-list>
 
-        <ion-item>
-          <ion-label position="floating">Password</ion-label>
-          <ion-input
-            type="password"
-            v-model.trim="v.password.$model"
-            data-testid="password-input"
-          ></ion-input>
-        </ion-item>
-      </ion-list>
+        <div
+          class="unlock-app"
+          @click="signinClicked"
+          data-testid="signin-button"
+        >
+          <ion-icon :icon="logInOutline"></ion-icon>
+          <div>Sign In</div>
+        </div>
+      </div>
+
+      <div v-else>
+        <div
+          class="unlock-app ion-text-center"
+          @click="unlock"
+          data-testid="unlock-button"
+        >
+          <ion-icon :icon="lockOpenOutline"></ion-icon>
+          <div>Unlock</div>
+        </div>
+
+        <div
+          class="unlock-app ion-text-center"
+          @click="redo"
+          data-testid="redo-button"
+        >
+          <ion-icon :icon="arrowRedoOutline"></ion-icon>
+          <div>Redo Sign In</div>
+        </div>
+      </div>
 
       <div class="error-message ion-padding" data-testid="message-area">
-        <div v-for="(error, idx) of v.$errors" :key="idx">
-          {{ error.$property }}: {{ error.$message }}
-        </div>
         <div v-if="errorMessage">{{ errorMessage }}</div>
       </div>
     </ion-content>
-
-    <ion-footer>
-      <ion-toolbar color="secondary">
-        <ion-button
-          expand="full"
-          data-testid="signin-button"
-          :disabled="!password || !email || v.$invalid"
-          @click="signinClicked"
-        >
-          Sign In
-          <ion-icon slot="end" :icon="logInOutline"></ion-icon>
-        </ion-button>
-      </ion-toolbar>
-    </ion-footer>
   </ion-page>
 </template>
 
 <script lang="ts">
 import {
-  IonButton,
   IonContent,
-  IonFooter,
   IonHeader,
   IonIcon,
-  IonInput,
   IonItem,
   IonLabel,
   IonList,
   IonPage,
+  IonSelect,
+  IonSelectOption,
   IonTitle,
   IonToolbar,
+  isPlatform,
 } from '@ionic/vue';
-import { logInOutline } from 'ionicons/icons';
-import { defineComponent, ref } from 'vue';
+import {
+  arrowRedoOutline,
+  lockOpenOutline,
+  logInOutline,
+} from 'ionicons/icons';
+import { AuthMode } from '@ionic-enterprise/identity-vault';
+import { computed, defineComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useVuelidate } from '@vuelidate/core';
-import { email as validEmail, required } from '@vuelidate/validators';
 import { useStore } from 'vuex';
+
+import { sessionVaultService } from '@/services/SessionVaultService';
 
 export default defineComponent({
   name: 'Login',
   components: {
-    IonButton,
     IonContent,
-    IonFooter,
     IonHeader,
     IonIcon,
-    IonInput,
     IonItem,
     IonLabel,
     IonList,
     IonPage,
+    IonSelect,
+    IonSelectOption,
     IonTitle,
     IonToolbar,
   },
   setup() {
-    const email = ref('');
-    const password = ref('');
+    const authMode = ref<number>();
+    const authModes = ref<Array<{ mode: AuthMode; label: string }>>([
+      {
+        mode: AuthMode.PasscodeOnly,
+        label: 'Session PIN Unlock',
+      },
+      {
+        mode: AuthMode.SecureStorage,
+        label: 'Never Lock Session',
+      },
+      {
+        mode: AuthMode.InMemoryOnly,
+        label: 'Force Login',
+      },
+    ]);
+    sessionVaultService.isBiometricsAvailable().then(available => {
+      if (available) {
+        authModes.value = [
+          {
+            mode: AuthMode.BiometricOnly,
+            label: 'Biometric Unlock',
+          },
+          ...authModes.value,
+        ];
+      }
+      authMode.value = authModes.value[0].mode;
+    });
+    const displayAuthMode = computed(() => isPlatform('hybrid'));
+
     const errorMessage = ref('');
 
-    const rules = {
-      email: { validEmail, required },
-      password: { required },
-    };
-    const v = useVuelidate(rules, { email, password });
+    const canUnlock = ref(false);
+    sessionVaultService.canUnlock().then(x => (canUnlock.value = x));
+
+    const signinButtonText = computed(() =>
+      canUnlock.value ? 'Sign In Again' : 'Sign In',
+    );
 
     const router = useRouter();
     const store = useStore();
 
-    async function signinClicked() {
-      const result = await store.dispatch('login', {
-        email: email.value,
-        password: password.value,
-      });
-      if (!result) {
-        password.value = '';
-        errorMessage.value = 'Invalid Email or Password. Please try again.';
+    async function performSignin() {
+      try {
+        await store.dispatch('login', {
+          authMode: authMode.value,
+        });
+        router.replace('/');
+      } catch (err) {
+        errorMessage.value = 'Invalid login. Please try again.';
+      }
+    }
+
+    function redo() {
+      store.dispatch('logout');
+    }
+
+    function signinClicked() {
+      if (canUnlock.value) {
+        canUnlock.value = false;
       } else {
+        performSignin();
+      }
+    }
+
+    async function unlock() {
+      if (await store.dispatch('restore')) {
         router.replace('/');
       }
     }
 
-    return { email, errorMessage, logInOutline, password, signinClicked, v };
+    return {
+      authModes,
+      canUnlock,
+      displayAuthMode,
+      errorMessage,
+      signinButtonText,
+
+      authMode,
+
+      arrowRedoOutline,
+      lockOpenOutline,
+      logInOutline,
+
+      redo,
+      signinClicked,
+      unlock,
+    };
   },
 });
 </script>
+
+<style scoped>
+.unlock-app {
+  margin-top: 3em;
+  font-size: xx-large;
+}
+</style>

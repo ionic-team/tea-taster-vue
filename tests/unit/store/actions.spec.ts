@@ -1,11 +1,11 @@
 import { ActionContext } from 'vuex';
 import { actions } from '@/store/actions';
-import AuthenticationService from '@/services/AuthenticationService';
-import SessionVaultService from '@/services/SessionVaultService';
+import { authenticationService } from '@/services/AuthenticationService';
+import { sessionVaultService } from '@/services/SessionVaultService';
 import { Session } from '@/models';
+import { AuthMode } from '@ionic-enterprise/identity-vault';
 
 jest.mock('@/services/AuthenticationService');
-jest.mock('@/services/SessionVaultService');
 
 const context: ActionContext<any, any> = {
   commit: jest.fn(),
@@ -27,106 +27,87 @@ const session: Session = {
 };
 
 describe('root actions', () => {
-  beforeEach(() => jest.resetAllMocks());
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
 
   describe('clear', () => {
-    it('commits CLEAR_SESSION', () => {
+    it('commits CLEAR_USER', () => {
       actions.clear(context);
       expect(context.commit).toHaveBeenCalledTimes(1);
-      expect(context.commit).toHaveBeenCalledWith('CLEAR_SESSION');
+      expect(context.commit).toHaveBeenCalledWith('CLEAR_USER');
     });
   });
 
   describe('login', () => {
     beforeEach(() => {
-      (AuthenticationService.login as any).mockResolvedValue({
-        success: false,
-      });
+      sessionVaultService.login = jest.fn();
+      (authenticationService.login as any).mockResolvedValue();
     });
 
-    const credentials = {
-      email: 'test@test.com',
-      password: 'thisisatest',
+    const payload = {
+      authMode: AuthMode.BiometricAndPasscode,
     };
 
     it('calls the login', () => {
-      actions.login(context, credentials);
-      expect(AuthenticationService.login).toHaveBeenCalledTimes(1);
-      expect(AuthenticationService.login).toHaveBeenCalledWith(
-        'test@test.com',
-        'thisisatest',
-      );
+      actions.login(context, payload);
+      expect(authenticationService.login).toHaveBeenCalledTimes(1);
     });
 
     describe('on failure', () => {
       beforeEach(() => {
-        (AuthenticationService.login as any).mockResolvedValue({
-          success: false,
-        });
+        (authenticationService.login as any).mockRejectedValue();
       });
 
       it('does not store the session', async () => {
-        await actions.login(context, credentials);
-        expect(SessionVaultService.set).not.toHaveBeenCalled();
+        await actions.login(context, payload);
+        expect(sessionVaultService.login).not.toHaveBeenCalled();
       });
 
       it('does not commit any state changes', async () => {
-        await actions.login(context, credentials);
+        await actions.login(context, payload);
         expect(context.commit).not.toHaveBeenCalled();
       });
 
       it('does not dispatch any further actions', async () => {
-        await actions.login(context, credentials);
+        await actions.login(context, payload);
         expect(context.dispatch).not.toHaveBeenCalled();
       });
 
       it('resolves false', async () => {
-        expect(await actions.login(context, credentials)).toBe(false);
+        expect(await actions.login(context, payload)).toBe(false);
       });
     });
 
     describe('on success', () => {
       beforeEach(() => {
-        (AuthenticationService.login as any).mockResolvedValue({
-          success: true,
-          user: session.user,
-          token: session.token,
-        });
+        (authenticationService.login as any).mockResolvedValue();
       });
 
-      it('stores the session', async () => {
-        await actions.login(context, credentials);
-        expect(SessionVaultService.set).toHaveBeenCalledTimes(1);
-        expect(SessionVaultService.set).toHaveBeenCalledWith(session);
-      });
-
-      it('commits the session', async () => {
-        await actions.login(context, credentials);
+      it('commits the user', async () => {
+        await actions.login(context, payload);
         expect(context.commit).toHaveBeenCalledTimes(1);
-        expect(context.commit).toHaveBeenCalledWith('SET_SESSION', session);
+        expect(context.commit).toHaveBeenCalledWith('SET_USER', session);
       });
 
       it(`dispatches the load action`, async () => {
-        await actions.login(context, credentials);
+        await actions.login(context, payload);
         expect(context.dispatch).toHaveBeenCalledTimes(1);
         expect(context.dispatch).toHaveBeenCalledWith('load');
       });
 
       it('resolves true', async () => {
-        expect(await actions.login(context, credentials)).toBe(true);
+        expect(await actions.login(context, payload)).toBe(true);
       });
     });
   });
 
   describe('logout', () => {
+    beforeEach(() => (sessionVaultService.logout = jest.fn()));
+
     it('logs out', async () => {
       await actions.logout(context);
-      expect(AuthenticationService.logout).toHaveBeenCalledTimes(1);
-    });
-
-    it('clears the session storage', async () => {
-      await actions.logout(context);
-      expect(SessionVaultService.clear).toHaveBeenCalledTimes(1);
+      expect(authenticationService.logout).toHaveBeenCalledTimes(1);
     });
 
     it('dispatches the clear action', async () => {
@@ -137,9 +118,11 @@ describe('root actions', () => {
   });
 
   describe('restore', () => {
+    beforeEach(() => (sessionVaultService.restoreSession = jest.fn()));
+
     it('gets the current session from storage', async () => {
       await actions.restore(context);
-      expect(SessionVaultService.get).toHaveBeenCalledTimes(1);
+      expect(sessionVaultService.restoreSession).toHaveBeenCalledTimes(1);
     });
 
     describe('without a stored session', () => {
@@ -156,13 +139,13 @@ describe('root actions', () => {
 
     describe('with a stored session', () => {
       beforeEach(() => {
-        (SessionVaultService.get as any).mockResolvedValue(session);
+        (sessionVaultService.restoreSession as any).mockResolvedValue(session);
       });
 
-      it('commits the session', async () => {
+      it('commits the user', async () => {
         await actions.restore(context);
         expect(context.commit).toHaveBeenCalledTimes(1);
-        expect(context.commit).toHaveBeenCalledWith('SET_SESSION', session);
+        expect(context.commit).toHaveBeenCalledWith('SET_USER', session);
       });
 
       it('dispatches the load action', async () => {

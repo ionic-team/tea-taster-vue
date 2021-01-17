@@ -1,86 +1,89 @@
-import { Plugins } from '@capacitor/core';
-import SessionVaultService from '@/services/SessionVaultService';
-import { Session } from '@/models';
+import { sessionVaultService } from '@/services/SessionVaultService';
+import { AuthMode } from '@ionic-enterprise/identity-vault';
 
-jest.mock('@capacitor/core');
-
-describe('SessionVaultService', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+describe('sessionVaultService', () => {
+  it('exists', () => {
+    expect(sessionVaultService).toBeTruthy();
   });
 
-  describe('set', () => {
-    it('sets the auth data using the user and token', async () => {
-      const { Storage } = Plugins;
-      (Storage.set as any).mockResolvedValue();
-      const session: Session = {
-        user: {
-          id: 73,
-          firstName: 'Sheldon',
-          lastName: 'Cooper',
-          email: 'physics@caltech.edu',
-        },
-        token: '98761243',
-      };
-      await SessionVaultService.set(session);
-      expect(Storage.set).toHaveBeenCalledTimes(1);
-      expect(Storage.set).toHaveBeenCalledWith({
-        key: 'session',
-        value: JSON.stringify(session),
-      });
-    });
-  });
+  describe('can unlock', () => {
+    let vault: any;
 
-  describe('get', () => {
     beforeEach(() => {
-      const { Storage } = Plugins;
-      (Storage.get as any).mockResolvedValue({
-        value: JSON.stringify({
-          user: {
-            id: 42,
-            firstName: 'Douglas',
-            lastName: 'Adams',
-            email: 'thanksfor@thefish.com',
-          },
-          token: '12349876',
-        } as Session),
-      });
+      vault = {
+        isLocked: jest.fn().mockResolvedValue(true),
+      };
+      sessionVaultService.getAuthMode = jest
+        .fn()
+        .mockResolvedValue(AuthMode.PasscodeOnly);
+      sessionVaultService.hasStoredSession = jest.fn().mockResolvedValue(true);
+      sessionVaultService.isBiometricsAvailable = jest
+        .fn()
+        .mockResolvedValue(true);
+      sessionVaultService.getVault = jest.fn().mockResolvedValue(vault);
     });
 
-    it('gets the value from storage', async () => {
-      const { Storage } = Plugins;
-      await SessionVaultService.get();
-      expect(Storage.get).toHaveBeenCalledTimes(1);
-      expect(Storage.get).toHaveBeenCalledWith({ key: 'session' });
+    it('is false if there is no stored session', async () => {
+      (sessionVaultService.hasStoredSession as any).mockResolvedValue(false);
+      expect(await sessionVaultService.canUnlock()).toBe(false);
     });
 
-    it('returns the value', async () => {
-      const session = await SessionVaultService.get();
-      expect(session).toEqual({
-        user: {
-          id: 42,
-          firstName: 'Douglas',
-          lastName: 'Adams',
-          email: 'thanksfor@thefish.com',
-        },
-        token: '12349876',
-      });
+    it('is false if there the vault is not locked', async () => {
+      (vault.isLocked as any).mockResolvedValue(false);
+      expect(await sessionVaultService.canUnlock()).toBe(false);
     });
 
-    it('returns undefined if a value has not been set', async () => {
-      const { Storage } = Plugins;
-      (Storage.get as any).mockResolvedValue({ value: null });
-      expect(await SessionVaultService.get()).toBeUndefined();
+    it('is false if the auth mode does not use locking', async () => {
+      (sessionVaultService.getAuthMode as any).mockResolvedValue(
+        AuthMode.InMemoryOnly,
+      );
+      expect(await sessionVaultService.canUnlock()).toBe(false);
+      (sessionVaultService.getAuthMode as any).mockResolvedValue(
+        AuthMode.SecureStorage,
+      );
+      expect(await sessionVaultService.canUnlock()).toBe(false);
     });
-  });
 
-  describe('clear', () => {
-    it('removes the data from storage', async () => {
-      const { Storage } = Plugins;
-      (Storage.remove as any).mockResolvedValue();
-      await SessionVaultService.clear();
-      expect(Storage.remove).toHaveBeenCalledTimes(1);
-      expect(Storage.remove).toHaveBeenCalledWith({ key: 'session' });
+    it('is true for passcode only mode', async () => {
+      (sessionVaultService.isBiometricsAvailable as any).mockResolvedValue(
+        false,
+      );
+      (sessionVaultService.getAuthMode as any).mockResolvedValue(
+        AuthMode.PasscodeOnly,
+      );
+      expect(await sessionVaultService.canUnlock()).toBe(true);
+      (sessionVaultService.isBiometricsAvailable as any).mockResolvedValue(
+        true,
+      );
+      expect(await sessionVaultService.canUnlock()).toBe(true);
+    });
+
+    it('is true for passcode and biometric', async () => {
+      (sessionVaultService.isBiometricsAvailable as any).mockResolvedValue(
+        false,
+      );
+      (sessionVaultService.getAuthMode as any).mockResolvedValue(
+        AuthMode.BiometricAndPasscode,
+      );
+      expect(await sessionVaultService.canUnlock()).toBe(true);
+      (sessionVaultService.isBiometricsAvailable as any).mockResolvedValue(
+        true,
+      );
+      expect(await sessionVaultService.canUnlock()).toBe(true);
+    });
+
+    it('depends on biometric availability for biometric only mode', async () => {
+      (sessionVaultService.isBiometricsAvailable as any).mockResolvedValue(
+        false,
+      );
+      (sessionVaultService.getAuthMode as any).mockResolvedValue(
+        AuthMode.BiometricOnly,
+      );
+      expect(await sessionVaultService.canUnlock()).toBe(false);
+      (sessionVaultService.isBiometricsAvailable as any).mockResolvedValue(
+        true,
+      );
+      expect(await sessionVaultService.canUnlock()).toBe(true);
     });
   });
 });

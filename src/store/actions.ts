@@ -1,35 +1,34 @@
 import { ActionContext } from 'vuex';
+import { AuthMode } from '@ionic-enterprise/identity-vault';
 
-import AuthenticationService from '@/services/AuthenticationService';
-import SessionVaultService from '@/services/SessionVaultService';
+import { authenticationService } from '@/services/AuthenticationService';
+import { sessionVaultService } from '@/services/SessionVaultService';
 
 import { State } from './state';
-import { Session } from '@/models';
 
 export const actions = {
   async login(
     { commit, dispatch }: ActionContext<State, State>,
-    credentials: { email: string; password: string },
+    payload: { authMode: AuthMode },
   ): Promise<boolean> {
-    const response = await AuthenticationService.login(
-      credentials.email,
-      credentials.password,
-    );
-    if (response.success && response.user && response.token) {
-      const session: Session = {
-        user: response.user,
-        token: response.token,
-      };
-      commit('SET_SESSION', session);
+    let success: boolean;
+    try {
+      await authenticationService.login();
+      const user = await authenticationService.getUserInfo();
+      sessionVaultService.setAuthMode(payload.authMode);
+      commit('SET_USER', user);
       dispatch('load');
-      SessionVaultService.set(session);
+      success = true;
+    } catch (err) {
+      success = false;
     }
-    return response?.success;
+
+    return success;
   },
 
   async logout({ dispatch }: ActionContext<State, State>): Promise<void> {
-    await AuthenticationService.logout();
-    await SessionVaultService.clear();
+    await authenticationService.logout();
+    await sessionVaultService.logout();
     dispatch('clear');
   },
 
@@ -37,14 +36,17 @@ export const actions = {
     commit,
     dispatch,
   }: ActionContext<State, State>): Promise<void> {
-    const session = await SessionVaultService.get();
-    if (session) {
-      commit('SET_SESSION', session);
+    try {
+      await sessionVaultService.unlock();
+      const user = await authenticationService.getUserInfo();
+      commit('SET_USER', user);
       dispatch('load');
+    } catch (err) {
+      console.error(err);
     }
   },
 
   clear({ commit }: ActionContext<State, State>): void {
-    commit('CLEAR_SESSION');
+    commit('CLEAR_USER');
   },
 };

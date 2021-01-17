@@ -1,13 +1,11 @@
-import { Session } from '@/models';
+import { User } from '@/models';
 
 export interface State {
-  session: Session | null;
+  user: User | null;
 }
 
 export const state = {
-  session: null,
+  user: null,
 };
 
-export const getters = {
-  sessionToken: (state: State): string | undefined => state.session?.token,
-};
+export const getters = {};

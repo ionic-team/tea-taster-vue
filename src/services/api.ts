@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
+import { authenticationService } from '@/services/AuthenticationService';
 import router from '@/router';
 import store from '@/store';
 
@@ -13,8 +14,8 @@ export const client = axios.create({
   },
 });
 
-client.interceptors.request.use((config: AxiosRequestConfig) => {
-  const token = store.getters.sessionToken;
+client.interceptors.request.use(async (config: AxiosRequestConfig) => {
+  const token = await authenticationService.getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

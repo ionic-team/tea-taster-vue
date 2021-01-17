@@ -5,7 +5,7 @@ import {
   RouteLocationNormalized,
 } from 'vue-router';
 
-import store from '@/store';
+import { authenticationService } from '@/services/AuthenticationService';
 import Tabs from '../views/Tabs.vue';
 
 async function checkAuthStatus(
@@ -13,9 +13,8 @@ async function checkAuthStatus(
   from: RouteLocationNormalized,
   next: NavigationGuardNext,
 ) {
-  if (!store.state.session && to.matched.some(r => r.meta.requiresAuth)) {
-    await store.dispatch('restore');
-    if (!store.state.session) {
+  if (to.matched.some(r => r.meta.requiresAuth)) {
+    if (!(await authenticationService.isAuthenticated())) {
       return next('/login');
     }
   }
