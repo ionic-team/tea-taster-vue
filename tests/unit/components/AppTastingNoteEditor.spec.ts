@@ -1,16 +1,24 @@
 import { mount, VueWrapper } from '@vue/test-utils';
 import { VuelidatePlugin } from '@vuelidate/core';
-import { modalController } from '@ionic/vue';
+import { Plugins } from '@capacitor/core';
+import { isPlatform, modalController } from '@ionic/vue';
 
 import AppTastingNoteEditor from '@/components/AppTastingNoteEditor.vue';
 import store from '@/store';
 import { Tea } from '@/models';
+
+jest.mock('@capacitor/core');
+jest.mock('@ionic/vue', () => {
+  const actual = jest.requireActual('@ionic/vue');
+  return { ...actual, isPlatform: jest.fn() };
+});
 
 describe('AppTastingNoteEditor.vue', () => {
   let wrapper: VueWrapper<any>;
   let teas: Array<Tea>;
 
   beforeEach(async () => {
+    (isPlatform as any).mockImplementation((key: string) => key === 'hybrid');
     teas = [
       {
         id: 1,
@@ -247,6 +255,71 @@ describe('AppTastingNoteEditor.vue', () => {
       expect(modalController.dismiss).not.toHaveBeenCalled();
       await button.trigger('click');
       expect(modalController.dismiss).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('share button', () => {
+    describe('in a web context', () => {
+      beforeEach(() => {
+        (isPlatform as any).mockImplementation(
+          (key: string) => key !== 'hybrid',
+        );
+      });
+
+      it('does not exist', () => {
+        const modal = mount(AppTastingNoteEditor, {
+          global: {
+            plugins: [store, VuelidatePlugin],
+          },
+        });
+        const button = modal.findComponent('[data-testid="share-button"]');
+        expect(button.exists()).toBe(false);
+      });
+    });
+
+    it('exists', () => {
+      const button = wrapper.findComponent('[data-testid="share-button"]');
+      expect(button.exists()).toBe(true);
+    });
+
+    it('is disabled until enough information is entered', async () => {
+      const button = wrapper.findComponent('[data-testid="share-button"]');
+      const brand = wrapper.findComponent('[data-testid="brand-input"]');
+      const name = wrapper.findComponent('[data-testid="name-input"]');
+      const rating = wrapper.findComponent('[data-testid="rating-input"]');
+
+      expect(button.attributes().disabled).toBe('true');
+
+      await brand.setValue('foobar');
+      expect(button.attributes().disabled).toBe('true');
+
+      await name.setValue('mytea');
+      expect(button.attributes().disabled).toBe('true');
+
+      await rating.setValue(2);
+      expect(button.attributes().disabled).toBe('false');
+    });
+
+    it('calls the share plugin when pressed', async () => {
+      const { Share } = Plugins;
+      const button = wrapper.findComponent('[data-testid="share-button"]');
+      const brand = wrapper.findComponent('[data-testid="brand-input"]');
+      const name = wrapper.findComponent('[data-testid="name-input"]');
+      const rating = wrapper.findComponent('[data-testid="rating-input"]');
+
+      await brand.setValue('foobar');
+      await name.setValue('mytea');
+      await rating.setValue(2);
+
+      await button.trigger('click');
+
+      expect(Share.share).toHaveBeenCalledTimes(1);
+      expect(Share.share).toHaveBeenCalledWith({
+        title: 'foobar: mytea',
+        text: 'I gave foobar: mytea 2 stars on the Tea Taster app',
+        dialogTitle: 'Share your tasting note',
+        url: 'https://tea-taster-training.web.app',
+      });
     });
   });
 });

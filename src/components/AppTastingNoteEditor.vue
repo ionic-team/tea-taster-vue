@@ -4,6 +4,15 @@
       <ion-title>{{ title }}</ion-title>
       <ion-buttons slot="primary">
         <ion-button
+          id="share-button"
+          data-testid="share-button"
+          v-if="sharingIsAvailable"
+          :disabled="!allowShare"
+          @click="share()"
+        >
+          <ion-icon slot="icon-only" :icon="shareOutline"></ion-icon>
+        </ion-button>
+        <ion-button
           id="cancel-button"
           data-testid="cancel-button"
           @click="cancel()"
@@ -95,9 +104,11 @@ import {
   IonTextarea,
   IonTitle,
   IonToolbar,
+  isPlatform,
   modalController,
 } from '@ionic/vue';
-import { close } from 'ionicons/icons';
+import { Plugins } from '@capacitor/core';
+import { close, shareOutline } from 'ionicons/icons';
 import { useStore } from 'vuex';
 import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
@@ -177,6 +188,20 @@ export default defineComponent({
       modalController.dismiss();
     }
 
+    const allowShare = computed(
+      () => !!(brand.value && name.value && rating.value),
+    );
+    const sharingIsAvailable = computed(() => isPlatform('hybrid'));
+    async function share() {
+      const { Share } = Plugins;
+      await Share.share({
+        title: `${brand.value}: ${name.value}`,
+        text: `I gave ${brand.value}: ${name.value} ${rating.value} stars on the Tea Taster app`,
+        dialogTitle: 'Share your tasting note',
+        url: 'https://tea-taster-training.web.app',
+      });
+    }
+
     if (props.noteId) {
       const note = store.getters['tastingNotes/find'](props.noteId);
       brand.value = note?.brand;
@@ -192,17 +217,22 @@ export default defineComponent({
       notes,
       rating,
       teaCategoryId,
-      teas,
+      v,
 
-      allowSubmit,
+      teas,
       buttonLabel,
       title,
 
+      allowSubmit,
       cancel,
       submit,
 
+      allowShare,
+      sharingIsAvailable,
+      share,
+
       close,
-      v,
+      shareOutline,
     };
   },
 });
