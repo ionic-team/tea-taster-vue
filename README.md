@@ -21,8 +21,7 @@ Each step of the training has its own commit within the `main` branch. You shoul
 ## Branches
 
 - `main` - shows the completed `@ionic/vue` three-day Enterprise training project. This project is used as the basis for other trainings
-
-**Note:** Other branches will be added for other purposes such as using Identity Vault and Auth Connect in an `@ionic/vue` project, but that is current WIP.
+- `feature/identity-vault` - shows the completed Identity Vault training for `@ionic/vue` applications. This branch also contains a few "demo" features that are not included in the training making it suitable for a customer-facing demo.
 
 Each of the branches has a similar structure to `main` whereby each step is signified by its own commit in the branch.
 
