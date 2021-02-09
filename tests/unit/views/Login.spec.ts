@@ -1,6 +1,5 @@
 import { flushPromises, mount, VueWrapper } from '@vue/test-utils';
 import { createRouter, createWebHistory } from '@ionic/vue-router';
-import { VuelidatePlugin } from '@vuelidate/core';
 
 import store from '@/store';
 import Login from '@/views/Login.vue';
@@ -18,7 +17,7 @@ describe('Login.vue', () => {
     await router.isReady();
     wrapper = mount(Login, {
       global: {
-        plugins: [router, store, VuelidatePlugin],
+        plugins: [router, store],
       },
     });
   });

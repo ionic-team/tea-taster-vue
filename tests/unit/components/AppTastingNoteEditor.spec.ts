@@ -1,5 +1,4 @@
 import { mount, VueWrapper } from '@vue/test-utils';
-import { VuelidatePlugin } from '@vuelidate/core';
 import { Plugins } from '@capacitor/core';
 import { isPlatform, modalController } from '@ionic/vue';
 
@@ -12,6 +11,17 @@ jest.mock('@ionic/vue', () => {
   const actual = jest.requireActual('@ionic/vue');
   return { ...actual, isPlatform: jest.fn() };
 });
+
+function mountComponent(noteId?: number) {
+  return mount(AppTastingNoteEditor, {
+    props: {
+      noteId,
+    },
+    global: {
+      plugins: [store],
+    },
+  });
+}
 
 describe('AppTastingNoteEditor.vue', () => {
   let wrapper: VueWrapper<any>;
@@ -72,11 +82,7 @@ describe('AppTastingNoteEditor.vue', () => {
     ]);
     store.dispatch = jest.fn();
     modalController.dismiss = jest.fn();
-    wrapper = mount(AppTastingNoteEditor, {
-      global: {
-        plugins: [store, VuelidatePlugin],
-      },
-    });
+    wrapper = mountComponent();
   });
 
   it('renders', () => {
@@ -143,14 +149,7 @@ describe('AppTastingNoteEditor.vue', () => {
   });
 
   it('populates the data when editing a note', () => {
-    const modal = mount(AppTastingNoteEditor, {
-      props: {
-        noteId: 73,
-      },
-      global: {
-        plugins: [store, VuelidatePlugin],
-      },
-    });
+    const modal = mountComponent(73);
     expect(modal.vm.brand).toEqual('Rishi');
     expect(modal.vm.name).toEqual('Puer Cake');
     expect(modal.vm.teaCategoryId).toEqual(6);
@@ -267,11 +266,7 @@ describe('AppTastingNoteEditor.vue', () => {
       });
 
       it('does not exist', () => {
-        const modal = mount(AppTastingNoteEditor, {
-          global: {
-            plugins: [store, VuelidatePlugin],
-          },
-        });
+        const modal = mountComponent();
         const button = modal.findComponent('[data-testid="share-button"]');
         expect(button.exists()).toBe(false);
       });

@@ -1,5 +1,4 @@
 import { createApp } from 'vue';
-import { VuelidatePlugin } from '@vuelidate/core';
 
 import App from './App.vue';
 import router from './router';
@@ -28,11 +27,7 @@ import '@ionic/vue/css/display.css';
 import './theme/variables.css';
 import './theme/styles.css';
 
-const app = createApp(App)
-  .use(IonicVue)
-  .use(router)
-  .use(store)
-  .use(VuelidatePlugin);
+const app = createApp(App).use(IonicVue).use(router).use(store);
 
 router.isReady().then(() => {
   app.mount('#app');
