@@ -107,7 +107,7 @@ import {
   isPlatform,
   modalController,
 } from '@ionic/vue';
-import { Plugins } from '@capacitor/core';
+import { Share } from '@capacitor/share';
 import { close, shareOutline } from 'ionicons/icons';
 import { useStore } from 'vuex';
 import { useVuelidate } from '@vuelidate/core';
@@ -193,7 +193,6 @@ export default defineComponent({
     );
     const sharingIsAvailable = computed(() => isPlatform('hybrid'));
     async function share() {
-      const { Share } = Plugins;
       await Share.share({
         title: `${brand.value}: ${name.value}`,
         text: `I gave ${brand.value}: ${name.value} ${rating.value} stars on the Tea Taster app`,

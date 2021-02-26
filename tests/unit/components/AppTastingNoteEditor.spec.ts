@@ -1,12 +1,12 @@
 import { mount, VueWrapper } from '@vue/test-utils';
-import { Plugins } from '@capacitor/core';
+import { Share } from '@capacitor/share';
 import { isPlatform, modalController } from '@ionic/vue';
 
 import AppTastingNoteEditor from '@/components/AppTastingNoteEditor.vue';
 import store from '@/store';
 import { Tea } from '@/models';
 
-jest.mock('@capacitor/core');
+jest.mock('@capacitor/share');
 jest.mock('@ionic/vue', () => {
   const actual = jest.requireActual('@ionic/vue');
   return { ...actual, isPlatform: jest.fn() };
@@ -296,7 +296,6 @@ describe('AppTastingNoteEditor.vue', () => {
     });
 
     it('calls the share plugin when pressed', async () => {
-      const { Share } = Plugins;
       const button = wrapper.findComponent('[data-testid="share-button"]');
       const brand = wrapper.findComponent('[data-testid="brand-input"]');
       const name = wrapper.findComponent('[data-testid="name-input"]');

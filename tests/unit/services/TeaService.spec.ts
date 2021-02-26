@@ -1,11 +1,11 @@
 import { client } from '@/services/api';
-import { Plugins } from '@capacitor/core';
+import { Storage } from '@capacitor/storage';
 
 import TeaService from '@/services/TeaService';
 
 import { Tea } from '@/models';
 
-jest.mock('@capacitor/core');
+jest.mock('@capacitor/storage');
 
 describe('TeaService', () => {
   let expectedTeas: Array<Tea>;
@@ -86,7 +86,7 @@ describe('TeaService', () => {
   describe('getAll', () => {
     beforeEach(() => {
       client.get = jest.fn().mockResolvedValue({});
-      Plugins.Storage.get = jest.fn().mockImplementation(opt => {
+      Storage.get = jest.fn().mockImplementation(opt => {
         let value = null;
         switch (opt.key) {
           case 'rating1':
@@ -125,8 +125,8 @@ describe('TeaService', () => {
       const tea = { ...expectedTeas[4] };
       tea.rating = 4;
       TeaService.save(tea);
-      expect(Plugins.Storage.set).toHaveBeenCalledTimes(1);
-      expect(Plugins.Storage.set).toHaveBeenCalledWith({
+      expect(Storage.set).toHaveBeenCalledTimes(1);
+      expect(Storage.set).toHaveBeenCalledWith({
         key: 'rating5',
         value: '4',
       });

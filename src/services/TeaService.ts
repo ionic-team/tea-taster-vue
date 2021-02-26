@@ -1,5 +1,5 @@
 import { client } from './api';
-import { Plugins } from '@capacitor/core';
+import { Storage } from '@capacitor/storage';
 
 import { Tea } from '@/models';
 
@@ -21,7 +21,6 @@ const images: Array<string> = [
 ];
 
 async function transformTea(data: RawData): Promise<Tea> {
-  const { Storage } = Plugins;
   const { value } = await Storage.get({ key: `rating${data.id}` });
   return {
     ...data,
@@ -42,7 +41,6 @@ export default {
   },
 
   async save(tea: Tea): Promise<void> {
-    const { Storage } = Plugins;
     return Storage.set({
       key: `rating${tea.id}`,
       value: tea.rating.toString(),

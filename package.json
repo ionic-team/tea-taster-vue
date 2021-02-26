@@ -13,9 +13,14 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@capacitor/android": "~2.4.6",
-    "@capacitor/core": "~2.4.6",
-    "@capacitor/ios": "~2.4.6",
+    "@capacitor/android": "~3.0.0-beta.4",
+    "@capacitor/app": "~0.3.3",
+    "@capacitor/core": "~3.0.0-beta.3",
+    "@capacitor/haptics": "~0.3.3",
+    "@capacitor/ios": "~3.0.0-beta.4",
+    "@capacitor/keyboard": "~0.5.3",
+    "@capacitor/share": "~0.5.0",
+    "@capacitor/storage": "~0.3.3",
     "@ionic/vue": "~5.6.0-dev.202102082348.d47cbf7",
     "@ionic/vue-router": "~5.6.0-dev.202102082348.d47cbf7",
     "@vuelidate/core": "~2.0.0-alpha.10",
@@ -27,7 +32,7 @@
     "vuex": "~4.0.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "~2.4.6",
+    "@capacitor/cli": "~3.0.0-beta.4",
     "@ionic/prettier-config": "~1.0.1",
     "@types/jest": "^24.0.19",
     "@typescript-eslint/eslint-plugin": "~4.12.0",

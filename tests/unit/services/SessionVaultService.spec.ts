@@ -1,8 +1,8 @@
-import { Plugins } from '@capacitor/core';
+import { Storage } from '@capacitor/storage';
 import SessionVaultService from '@/services/SessionVaultService';
 import { Session } from '@/models';
 
-jest.mock('@capacitor/core');
+jest.mock('@capacitor/storage');
 
 describe('SessionVaultService', () => {
   beforeEach(() => {
@@ -11,7 +11,6 @@ describe('SessionVaultService', () => {
 
   describe('set', () => {
     it('sets the auth data using the user and token', async () => {
-      const { Storage } = Plugins;
       (Storage.set as any).mockResolvedValue();
       const session: Session = {
         user: {
@@ -33,7 +32,6 @@ describe('SessionVaultService', () => {
 
   describe('get', () => {
     beforeEach(() => {
-      const { Storage } = Plugins;
       (Storage.get as any).mockResolvedValue({
         value: JSON.stringify({
           user: {
@@ -48,7 +46,6 @@ describe('SessionVaultService', () => {
     });
 
     it('gets the value from storage', async () => {
-      const { Storage } = Plugins;
       await SessionVaultService.get();
       expect(Storage.get).toHaveBeenCalledTimes(1);
       expect(Storage.get).toHaveBeenCalledWith({ key: 'session' });
@@ -68,7 +65,6 @@ describe('SessionVaultService', () => {
     });
 
     it('returns undefined if a value has not been set', async () => {
-      const { Storage } = Plugins;
       (Storage.get as any).mockResolvedValue({ value: null });
       expect(await SessionVaultService.get()).toBeUndefined();
     });
@@ -76,7 +72,6 @@ describe('SessionVaultService', () => {
 
   describe('clear', () => {
     it('removes the data from storage', async () => {
-      const { Storage } = Plugins;
       (Storage.remove as any).mockResolvedValue();
       await SessionVaultService.clear();
       expect(Storage.remove).toHaveBeenCalledTimes(1);
