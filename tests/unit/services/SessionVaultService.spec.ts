@@ -6,12 +6,14 @@ jest.mock('@capacitor/storage');
 
 describe('SessionVaultService', () => {
   beforeEach(() => {
+    Storage.remove = jest.fn();
+    Storage.set = jest.fn();
+    Storage.get = jest.fn();
     jest.clearAllMocks();
   });
 
   describe('set', () => {
     it('sets the auth data using the user and token', async () => {
-      (Storage.set as any).mockResolvedValue();
       const session: Session = {
         user: {
           id: 73,

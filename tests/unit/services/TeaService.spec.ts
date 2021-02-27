@@ -121,6 +121,7 @@ describe('TeaService', () => {
   });
 
   describe('save', () => {
+    beforeEach(() => (Storage.set = jest.fn()));
     it('saves the value', () => {
       const tea = { ...expectedTeas[4] };
       tea.rating = 4;

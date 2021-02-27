@@ -258,6 +258,11 @@ describe('AppTastingNoteEditor.vue', () => {
   });
 
   describe('share button', () => {
+    beforeEach(() => {
+      Share.share = jest.fn();
+      jest.clearAllMocks();
+    });
+
     describe('in a web context', () => {
       beforeEach(() => {
         (isPlatform as any).mockImplementation(
