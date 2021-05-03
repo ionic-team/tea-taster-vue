@@ -7,6 +7,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build && cap copy",
+    "postinstall": "husky install",
     "test:dev": "vue-cli-service test:unit --watch",
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "vue-cli-service test:e2e",
@@ -16,8 +17,8 @@
     "@capacitor/android": "~2.4.6",
     "@capacitor/core": "~2.4.6",
     "@capacitor/ios": "~2.4.6",
-    "@ionic/vue": "~5.6.0-dev.202102082348.d47cbf7",
-    "@ionic/vue-router": "~5.6.0-dev.202102082348.d47cbf7",
+    "@ionic/vue": "5.6.0-dev.202102082348.d47cbf7",
+    "@ionic/vue-router": "5.6.0-dev.202102082348.d47cbf7",
     "@vuelidate/core": "~2.0.0-alpha.10",
     "@vuelidate/validators": "~2.0.0-alpha.8",
     "axios": "~0.21.1",
@@ -42,18 +43,13 @@
     "@vue/compiler-sfc": "^3.0.0-0",
     "@vue/eslint-config-typescript": "~7.0.0",
     "@vue/test-utils": "~2.0.0-rc.0",
-    "eslint": "~7.19.0",
-    "eslint-plugin-vue": "~7.5.0",
-    "husky": "~4.3.8",
+    "eslint": "~6.8.0",
+    "eslint-plugin-vue": "~7.9.0",
+    "husky": "~6.0.0",
     "prettier": "~2.2.1",
     "pretty-quick": "~3.1.0",
     "typescript": "~3.9.3",
     "vue-jest": "~5.0.0-alpha.8"
   },
-  "prettier": "@ionic/prettier-config",
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged"
-    }
-  }
+  "prettier": "@ionic/prettier-config"
 }

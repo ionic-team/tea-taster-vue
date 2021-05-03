@@ -18,6 +18,13 @@ At this point, you should be able to either run the application in a dev server 
 
 Each step of the training has its own commit within the `main` branch. You should be able to use this information to gather a general idea of the various changes that were needed at each step of the development of this application. However, if code needs to be modified to support later changes (such as a significant change to a dependency), that coding change will only be reflected in later commits, so the commits themselseves should only be used as a guide as needed.
 
+## Credentials
+
+This application uses a live backend API that requires a login. Unless you have your own credentials, please use the following:
+
+- **email:** `test@ionic.io`
+- **password:** `Ion54321`
+
 ## Branches
 
 - `main` - shows the completed `@ionic/vue` three-day Enterprise training project. This project is used as the basis for other trainings
